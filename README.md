@@ -19,7 +19,7 @@ An interactive flashcard web app for learning and exploring developer mental mod
 
 ## 📸 Preview
 
-![Preview Screenshot](screenshot.png) <!-- Optional: Add a screenshot of your app UI -->
+![Dev Mental Models App Preview](dev_mental_models_preview.png)
 
 ---
 
@@ -29,6 +29,7 @@ An interactive flashcard web app for learning and exploring developer mental mod
     ├── index.html       # Main app UI
     ├── styles.css       # Theme and layout
     ├── script.js        # App logic and interactivity
+    ├── dev_mental_models_preview.png  # Preview image for README
     └── README.md        # You're here!
 
 ---
