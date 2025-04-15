@@ -64,6 +64,7 @@ h1 {
   transition: background var(--transition-speed) ease, transform 0.1s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #darkModeToggle::after {
@@ -95,6 +96,7 @@ body.dark #darkModeToggle::after {
   position: relative;
   cursor: pointer;
   margin-bottom: 20px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .front,
@@ -155,39 +157,57 @@ body.dark #darkModeToggle::after {
   gap: 10px;
 }
 
+/* Fix for iOS button color persistence issue */
 .primary-controls button {
-  background: var(--accent-color);
+  background-color: var(--accent-color);
   color: white;
   border: none;
   border-radius: 8px;
   padding: 12px 24px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   min-width: 120px;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Force iOS to reset button appearance */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .secondary-controls button {
-  background: var(--btn-bg);
+  background-color: var(--btn-bg);
   color: var(--text);
   border: none;
   border-radius: 8px;
   padding: 10px 15px;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Force iOS to reset button appearance */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .primary-controls button:hover,
 .secondary-controls button:hover {
-  background: var(--btn-hover);
+  background-color: var(--btn-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.primary-controls button:active,
+/* Explicitly reset active state for iOS */
+.primary-controls button:active {
+  background-color: var(--accent-color);
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 .secondary-controls button:active {
+  background-color: var(--btn-bg);
   transform: translateY(1px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -232,6 +252,8 @@ button[type="submit"] {
   background: var(--bg);
   color: var(--text);
   transition: border 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 select:focus,
@@ -248,18 +270,23 @@ textarea {
 }
 
 button[type="submit"] {
-  background: var(--accent-color);
+  background-color: var(--accent-color);
   color: white;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 button[type="submit"]:hover {
-  background: var(--accent-color);
+  background-color: var(--accent-color);
   opacity: 0.9;
   transform: translateY(-2px);
+}
+
+button[type="submit"]:active {
+  background-color: var(--accent-color);
+  transform: translateY(1px);
 }
 
 /* === Markdown-style Formatting === */
