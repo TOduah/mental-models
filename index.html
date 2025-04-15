@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dev Mental Models</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="top-controls">
+      <h1>🧠 Dev Mental Models</h1>
+      <button id="darkModeToggle" aria-label="Toggle dark mode"></button>
+    </div>
+
+    <div class="card-container">
+      <div id="card" class="card" onclick="flipCard()">
+        <div class="front" id="cardFront"></div>
+        <div class="back" id="cardBack"></div>
+      </div>
+    </div>
+
+    <div class="controls-wrapper">
+      <div class="primary-controls">
+        <button onclick="prevCard()">Previous</button>
+        <button onclick="nextCard()">Next</button>
+      </div>
+
+      <div class="secondary-controls">
+        <button onclick="shuffleCard()">Shuffle</button>
+        <button onclick="downloadCards('json')">Download JSON</button>
+        <button onclick="downloadCards('markdown')">Download MarkDown</button>
+      </div>
+    </div>
+
+    <div class="filter-container">
+      <label for="tagFilter">Filter by tag:</label>
+      <select id="tagFilter">
+        <option value="all">All</option>
+      </select>
+    </div>
+
+    <form id="addModelForm">
+      <h3>Add Your Own Model</h3>
+      <input type="text" name="name" placeholder="Model name" required />
+      <textarea name="explanation" placeholder="Explanation (supports **bold**, _italic_, `code`)" required></textarea>
+      <input type="text" name="tags" placeholder="Tags (comma-separated)" required />
+      <button type="submit">Add Model</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
