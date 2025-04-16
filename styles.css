@@ -477,6 +477,27 @@ button[type="submit"]:active {
   }
 }
 
+/* Force hardware acceleration for smoother transitions on iOS */
+@supports (-webkit-touch-callout: none) {
+  .card, .front, .back {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  
+  /* More forceful approach to fix iOS Safari issues */
+  .card.flipped .front {
+    -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+    display: block;
+  }
+  
+  .card.flipped .back {
+    -webkit-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+    display: block;
+  }
+}
+
 /* For very small screens (like iPhone 5/SE) */
 @media (max-width: 320px) {
   .card {

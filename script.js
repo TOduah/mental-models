@@ -93,20 +93,19 @@ const DEFAULT_MODELS = [
   }
   
   function flipCard() {
-    card.classList.toggle("flipped");
-    
-    // Force browser reflow/repaint for iOS Safari
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      card.offsetHeight; // This triggers a reflow
-      
-      // Reset any ongoing transitions
-      card.style.transition = "none";
-      setTimeout(() => {
-        card.style.transition = "";
-      }, 10);
-    }
-    
-    console.log("Card flipped");
+    // Force iOS to recognize the change
+    setTimeout(function() {
+      card.classList.toggle("flipped");
+      console.log("Card flipped");
+    }, 0);
+  }
+
+  function initializeCardFlipping() {
+    // Remove any existing listeners first to avoid duplication
+    card.removeEventListener('click', flipCard);
+    // Add the click handler - use actual function reference not a string
+    card.addEventListener('click', flipCard);
+    console.log("Card flipping initialized");
   }
   
   function loadModels() {
@@ -342,6 +341,7 @@ const DEFAULT_MODELS = [
     
     applyDarkModeSetting();
     updateTagOptions();
+    initializeCardFlipping();
     
     // Force reset the current index
     currentIndex = 0;
