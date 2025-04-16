@@ -58,6 +58,9 @@ const DEFAULT_MODELS = [
     setTimeout(() => {
       card.style.animation = "cardPulse 0.5s ease";
     }, 10);
+    
+    // Debug info - log current index and model count
+    console.log(`Update card: index=${index}, total models=${filteredModels.length}`);
   }
   
   function nextCard() {
@@ -91,6 +94,7 @@ const DEFAULT_MODELS = [
   
   function flipCard() {
     card.classList.toggle("flipped");
+    console.log("Card flipped");
   }
   
   function loadModels() {
@@ -136,9 +140,13 @@ const DEFAULT_MODELS = [
   
   function getFilteredModels() {
     const selectedTag = tagFilter.value;
-    return selectedTag === "all"
+    const filtered = selectedTag === "all"
       ? mentalModels
       : mentalModels.filter(m => m.tags.includes(selectedTag));
+    
+    console.log(`Filtered models: ${filtered.length} models for tag '${selectedTag}'`);
+    console.log(filtered.map(m => m.name).join(', '));
+    return filtered;
   }
   
   function updateTagOptions() {
@@ -259,19 +267,6 @@ const DEFAULT_MODELS = [
   `;
   document.head.appendChild(style);
   
-  // Initialize on page load
-  function initialize() {
-    applyDarkModeSetting();
-    updateTagOptions();
-    updateCard(currentIndex);
-    
-    // Special iOS Safari fix
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      // Apply iOS-specific fixes
-      fixIOSButtonInteractions();
-    }
-  }
-  
   // Function to fix iOS button interactions
   function fixIOSButtonInteractions() {
     // Add iOS specific style for animations
@@ -291,84 +286,67 @@ const DEFAULT_MODELS = [
     `;
     document.head.appendChild(iosFix);
     
-    // Set document properties
+    // Set document properties 
     document.documentElement.style.setProperty('--accent-color', '#4c6ef5');
     
-    // Track active buttons to ensure they get reset
-    let activeTouchButtons = new Set();
-    
-    // Add tap animation to buttons
+    // Simple approach for buttons - use simpler events
     document.querySelectorAll('button').forEach(btn => {
-      // Store original colors
-      const isPrimary = btn.classList.contains('primary-controls') || btn.closest('.primary-controls');
-      const originalBg = isPrimary ? 
+      const isPrimary = btn.closest('.primary-controls') !== null;
+      
+      // Save original background colors
+      const origBg = isPrimary ? 
         getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
         getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
       
-      btn.addEventListener('touchstart', function(e) {
-        // Change background color on touch
+      btn.addEventListener('mousedown', function() {
         this.style.backgroundColor = isPrimary ? '#3c5bd8' : '#d0d0d0';
-        this.classList.add('button-press-animation');
-        activeTouchButtons.add(this);
-        
-        // Prevent ghost clicks and default behavior
-        e.preventDefault();
-      }, { passive: false });
+      });
       
-      btn.addEventListener('touchend', function(e) {
-        // Reset background color
-        this.style.backgroundColor = originalBg;
-        this.classList.remove('button-press-animation');
-        activeTouchButtons.delete(this);
-        
-        // Trigger click after tiny delay to prevent double actions
-        setTimeout(() => {
-          if (e.cancelable) {
-            const clickEvent = new MouseEvent('click', {
-              bubbles: true,
-              cancelable: true,
-              view: window
-            });
-            this.dispatchEvent(clickEvent);
-          }
-        }, 10);
-        
-        e.preventDefault();
-      }, { passive: false });
+      btn.addEventListener('mouseup', function() {
+        this.style.backgroundColor = origBg;
+      });
       
-      btn.addEventListener('touchcancel', function() {
-        // Reset on touch cancel too
-        this.style.backgroundColor = originalBg;
-        this.classList.remove('button-press-animation');
-        activeTouchButtons.delete(this);
-      }, { passive: true });
+      btn.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = origBg;
+      });
     });
     
-    // Global touchend handler to ensure all buttons get reset if touchend happens outside
-    document.addEventListener('touchend', function() {
-      // Reset any active buttons that didn't get a touchend event
-      activeTouchButtons.forEach(button => {
-        const isPrimary = button.classList.contains('primary-controls') || button.closest('.primary-controls');
-        const originalBg = isPrimary ? 
-          getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
-          getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
-          
-        button.style.backgroundColor = originalBg;
-        button.classList.remove('button-press-animation');
-      });
-      activeTouchButtons.clear();
-    }, { passive: true });
+    // Fix card flipping specifically for iOS
+    const cardElement = document.getElementById('card');
     
-    // Special handling for card flip
-    document.getElementById('card').addEventListener('touchend', function(e) {
-      // Prevent double-triggering of flip
-      if (e.target.id === 'card' || e.target.id === 'cardFront' || e.target.id === 'cardBack') {
-        e.preventDefault();
-        flipCard();
-      }
-    }, { passive: false });
+    // Remove the inline onclick handler that might be causing issues
+    cardElement.removeAttribute('onclick');
+    
+    // Add a simple click event listener directly
+    cardElement.addEventListener('click', function(e) {
+      flipCard();
+    });
+  }
+  
+  // Initialize function
+  function initialize() {
+    console.log("Initializing app...");
+    console.log(`Loaded ${mentalModels.length} mental models`);
+    
+    applyDarkModeSetting();
+    updateTagOptions();
+    
+    // Force reset the current index
+    currentIndex = 0;
+    updateCard(currentIndex);
+    
+    // Special iOS Safari fix
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      console.log("iOS device detected, applying special fixes");
+      fixIOSButtonInteractions();
+    }
   }
   
   // Call initialize on load
-  document.addEventListener('DOMContentLoaded', initialize);
-  initialize(); // Also call it now in case DOM is already loaded
+  window.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded");
+    initialize();
+  });
+  
+  // Also call initialize now in case DOM is already loaded
+  initialize();
