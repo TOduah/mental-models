@@ -291,61 +291,83 @@ const DEFAULT_MODELS = [
     `;
     document.head.appendChild(iosFix);
     
-    // Set document properties 
+    // Set document properties
     document.documentElement.style.setProperty('--accent-color', '#4c6ef5');
+    
+    // Track active buttons to ensure they get reset
+    let activeTouchButtons = new Set();
     
     // Add tap animation to buttons
     document.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('touchstart', function() {
+      // Store original colors
+      const isPrimary = btn.classList.contains('primary-controls') || btn.closest('.primary-controls');
+      const originalBg = isPrimary ? 
+        getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
+        getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
+      
+      btn.addEventListener('touchstart', function(e) {
         // Change background color on touch
-        if (this.classList.contains('primary-controls') || this.closest('.primary-controls')) {
-          this.style.backgroundColor = '#3c5bd8';
-        } else {
-          this.style.backgroundColor = '#d0d0d0';
-        }
-        
-        // Add animation class for the press effect
+        this.style.backgroundColor = isPrimary ? '#3c5bd8' : '#d0d0d0';
         this.classList.add('button-press-animation');
-      }, { passive: true });
+        activeTouchButtons.add(this);
+        
+        // Prevent ghost clicks and default behavior
+        e.preventDefault();
+      }, { passive: false });
       
-      btn.addEventListener('touchend', function() {
+      btn.addEventListener('touchend', function(e) {
         // Reset background color
+        this.style.backgroundColor = originalBg;
+        this.classList.remove('button-press-animation');
+        activeTouchButtons.delete(this);
+        
+        // Trigger click after tiny delay to prevent double actions
         setTimeout(() => {
-          const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
-          if (this.classList.contains('primary-controls') || this.closest('.primary-controls')) {
-            this.style.backgroundColor = accentColor;
-          } else {
-            const btnBg = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
-            this.style.backgroundColor = btnBg;
+          if (e.cancelable) {
+            const clickEvent = new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              view: window
+            });
+            this.dispatchEvent(clickEvent);
           }
-          
-          // Remove animation class after delay
-          setTimeout(() => {
-            this.classList.remove('button-press-animation');
-          }, 300);
-        }, 50);
-      }, { passive: true });
+        }, 10);
+        
+        e.preventDefault();
+      }, { passive: false });
       
-      // Also handle animation end to ensure clean state
-      btn.addEventListener('animationend', function(e) {
-        if (e.animationName === 'buttonPress') {
-          this.classList.remove('button-press-animation');
-        }
-      });
+      btn.addEventListener('touchcancel', function() {
+        // Reset on touch cancel too
+        this.style.backgroundColor = originalBg;
+        this.classList.remove('button-press-animation');
+        activeTouchButtons.delete(this);
+      }, { passive: true });
     });
     
-    // Special handling for prev/next buttons
-    [prevButton, nextButton].forEach(button => {
-      button.addEventListener('click', function() {
-        // Apply and then remove animation class
-        this.classList.add('button-press-animation');
-        setTimeout(() => {
-          this.classList.remove('button-press-animation');
-        }, 300);
+    // Global touchend handler to ensure all buttons get reset if touchend happens outside
+    document.addEventListener('touchend', function() {
+      // Reset any active buttons that didn't get a touchend event
+      activeTouchButtons.forEach(button => {
+        const isPrimary = button.classList.contains('primary-controls') || button.closest('.primary-controls');
+        const originalBg = isPrimary ? 
+          getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
+          getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
+          
+        button.style.backgroundColor = originalBg;
+        button.classList.remove('button-press-animation');
       });
-    });
+      activeTouchButtons.clear();
+    }, { passive: true });
+    
+    // Special handling for card flip
+    document.getElementById('card').addEventListener('touchend', function(e) {
+      // Prevent double-triggering of flip
+      if (e.target.id === 'card' || e.target.id === 'cardFront' || e.target.id === 'cardBack') {
+        e.preventDefault();
+        flipCard();
+      }
+    }, { passive: false });
   }
-  
   
   // Call initialize on load
   document.addEventListener('DOMContentLoaded', initialize);
