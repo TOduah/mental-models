@@ -157,7 +157,7 @@ body.dark #darkModeToggle::after {
   gap: 10px;
 }
 
-/* Fix for iOS button color persistence issue */
+/* Fixed iOS button styling */
 .primary-controls button {
   background-color: var(--accent-color);
   color: white;
@@ -166,14 +166,24 @@ body.dark #darkModeToggle::after {
   padding: 12px 24px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   min-width: 120px;
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  /* Force iOS to reset button appearance */
-  -webkit-user-select: none;
-  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-controls button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--accent-color);
+  z-index: -1;
 }
 
 .secondary-controls button {
@@ -183,31 +193,33 @@ body.dark #darkModeToggle::after {
   border-radius: 8px;
   padding: 10px 15px;
   cursor: pointer;
-  transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
-  /* Force iOS to reset button appearance */
-  -webkit-user-select: none;
-  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.secondary-controls button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--btn-bg);
+  z-index: -1;
 }
 
 .primary-controls button:hover,
 .secondary-controls button:hover {
-  background-color: var(--btn-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Explicitly reset active state for iOS */
-.primary-controls button:active {
-  background-color: var(--accent-color);
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
+.primary-controls button:active,
 .secondary-controls button:active {
-  background-color: var(--btn-bg);
   transform: translateY(1px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -279,13 +291,11 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background-color: var(--accent-color);
   opacity: 0.9;
   transform: translateY(-2px);
 }
 
 button[type="submit"]:active {
-  background-color: var(--accent-color);
   transform: translateY(1px);
 }
 
@@ -328,14 +338,17 @@ code {
 }
 
 @media (max-width: 400px) {
+  /* Keep primary controls (prev/next) always horizontal */
   .primary-controls {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
   }
   
   .primary-controls button {
-    width: 100%;
-    max-width: 200px;
+    flex: 1;
+    max-width: 120px;
+    padding: 10px 5px;
   }
   
   .secondary-controls {
@@ -351,5 +364,20 @@ code {
   #darkModeToggle {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* iPad and smaller tablets */
+@media (min-width: 401px) and (max-width: 768px) {
+  .primary-controls button {
+    min-width: 110px;
+  }
+}
+
+/* iOS-specific fix */
+@supports (-webkit-touch-callout: none) {
+  .primary-controls button, .secondary-controls button {
+    /* Remove transitions that may interfere with color changes */
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
   }
 }

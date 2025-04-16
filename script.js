@@ -28,6 +28,28 @@ const DEFAULT_MODELS = [
   const front = document.getElementById("cardFront");
   const back = document.getElementById("cardBack");
   const tagFilter = document.getElementById("tagFilter");
+  const prevButton = document.getElementById("prevButton");
+  const nextButton = document.getElementById("nextButton");
+  
+  // iOS color fix functions
+  function fixIOSButtonColors() {
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // Apply iOS-specific button fixes
+      document.querySelectorAll('.primary-controls button').forEach(btn => {
+        btn.addEventListener('touchstart', () => {
+          btn.style.backgroundColor = btn.getAttribute('data-active-color') || '#3c5bd8';
+        }, { passive: true });
+        
+        btn.addEventListener('touchend', () => {
+          setTimeout(() => {
+            // Get the computed CSS variable value instead of using the variable syntax directly
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            btn.style.backgroundColor = accentColor;
+          }, 50);
+        }, { passive: true });
+      });
+    }
+  }
   
   function renderExplanation(text) {
     return text
@@ -59,6 +81,9 @@ const DEFAULT_MODELS = [
   }
   
   function nextCard() {
+    // Force button color reset in iOS
+    resetButtonStyle(nextButton, getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim());
+    
     const filtered = getFilteredModels();
     if (filtered.length === 0) return;
     
@@ -67,11 +92,28 @@ const DEFAULT_MODELS = [
   }
   
   function prevCard() {
+    // Force button color reset in iOS
+    resetButtonStyle(prevButton, getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim());
+    
     const filtered = getFilteredModels();
     if (filtered.length === 0) return;
     
     currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
     updateCard(currentIndex);
+  }
+  
+  // Function to force button style reset for iOS
+  function resetButtonStyle(button, color) {
+    // Force button color reset for iOS
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // First set a different color to force a repaint
+      button.style.backgroundColor = button.getAttribute('data-active-color') || '#3c5bd8';
+      
+      // Then revert back to the original color
+      setTimeout(() => {
+        button.style.backgroundColor = color;
+      }, 10);
+    }
   }
   
   function shuffleCard() {
@@ -117,7 +159,7 @@ const DEFAULT_MODELS = [
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--accent-color);
+      background: ${getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim()};
       color: white;
       padding: 10px 20px;
       border-radius: 8px;
@@ -180,6 +222,58 @@ const DEFAULT_MODELS = [
     localStorage.setItem("darkMode", isDark);
   });
   
+  // Additional iOS button fixes - store original colors for reference
+  function initializeIOSFixes() {
+    // Set data attributes for iOS color reference
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // Add event listeners to force color refresh on touchend
+      document.querySelectorAll('button').forEach(btn => {
+        // Get computed style
+        const style = getComputedStyle(btn);
+        const bgColor = style.backgroundColor;
+        
+        // Store original color
+        btn.setAttribute('data-original-color', bgColor);
+        
+        // Set active color (slightly darker)
+        if (btn.classList.contains('primary-controls')) {
+          btn.setAttribute('data-active-color', '#3c5bd8'); // Darker blue
+        } else {
+          btn.setAttribute('data-active-color', '#d0d0d0'); // Darker gray
+        }
+        
+        // Add special iOS handlers
+        btn.addEventListener('touchend', function() {
+          // Small delay to ensure the color reset happens after iOS releases the button
+          setTimeout(() => {
+            if (this.classList.contains('primary-button')) {
+              const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+              this.style.backgroundColor = accentColor;
+            } else {
+              const btnBg = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
+              this.style.backgroundColor = btnBg;
+            }
+          }, 50);
+        }, { passive: true });
+      });
+  
+      // Apply CSS fixes for iOS
+      const styleFixForIOS = document.createElement('style');
+      styleFixForIOS.textContent = `
+        /* iOS-specific overrides */
+        @supports (-webkit-touch-callout: none) {
+          .primary-controls button {
+            background-color: var(--accent-color) !important;
+          }
+          .primary-controls button:active {
+            background-color: #3c5bd8 !important;
+          }
+        }
+      `;
+      document.head.appendChild(styleFixForIOS);
+    }
+  }
+  
   // Export functionality
   function downloadCards(type) {
     const local = JSON.parse(localStorage.getItem("mentalModels") || "[]");
@@ -215,7 +309,7 @@ const DEFAULT_MODELS = [
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: var(--accent-color);
+      background: ${getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim()};
       color: white;
       padding: 10px 20px;
       border-radius: 8px;
@@ -230,7 +324,7 @@ const DEFAULT_MODELS = [
     }, 2500);
   }
   
-  // Add some animations to the CSS
+  // Add animations to the CSS
   const style = document.createElement('style');
   style.textContent = `
   @keyframes cardPulse {
@@ -252,6 +346,32 @@ const DEFAULT_MODELS = [
   document.head.appendChild(style);
   
   // Initialize on page load
-  applyDarkModeSetting();
-  updateTagOptions();
-  updateCard(currentIndex);
+  function initialize() {
+    applyDarkModeSetting();
+    updateTagOptions();
+    updateCard(currentIndex);
+    initializeIOSFixes();
+    
+    // Special iOS Safari fix
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent)) {
+      document.documentElement.style.setProperty('--accent-color', '#4c6ef5');
+      
+      // Force repaint buttons on iOS Safari
+      const btnStyle = document.createElement('style');
+      btnStyle.textContent = `
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+          .primary-controls button {
+            background-color: #4c6ef5 !important;
+          }
+          .primary-controls button:active {
+            background-color: #3c5bd8 !important;
+          }
+        }
+      `;
+      document.head.appendChild(btnStyle);
+    }
+  }
+  
+  // Call initialize on load
+  document.addEventListener('DOMContentLoaded', initialize);
+  initialize(); // Also call it now in case DOM is already loaded
