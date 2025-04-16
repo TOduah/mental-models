@@ -91,64 +91,54 @@ body.dark #darkModeToggle::after {
 }
 
 .card {
+  perspective: 1000px;
   width: 100%;
   max-width: 360px;
   height: 220px;
-  perspective: 1000px;
-  position: relative;
   cursor: pointer;
   margin-bottom: 20px;
-  -webkit-tap-highlight-color: transparent;
-  transform-style: preserve-3d; /* Added for iOS compatibility */
 }
 
-.front,
-.back {
+.card-inner {
   width: 100%;
   height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4,0.2,0.2,1);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.front, .back {
   position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
   top: 0;
-  left: 0; /* Added for iOS */
   backface-visibility: hidden;
-  -webkit-backface-visibility: hidden; /* Added specifically for iOS */
-  background: var(--card-bg);
-  color: var(--text);
+  -webkit-backface-visibility: hidden;
   border-radius: 12px;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transition: transform 0.6s;
-  transform-style: preserve-3d; /* Added for iOS */
-  overflow: auto;
+  background: var(--card-bg, #fff);
+  color: var(--text, #222);
   box-sizing: border-box;
-  /* Text formatting improvements */
-  text-align: center;
-  word-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
+  font-size: 1rem;
 }
 
-/* Front card - title styling */
 .front {
-  font-size: clamp(18px, 5vw, 24px);
-  font-weight: 600;
-  line-height: 1.3;
-  transform: rotateY(0deg); /* Explicit for iOS */
-  z-index: 2; /* Higher z-index for front by default */
+  transform: rotateY(0deg);
+  z-index: 2;
 }
 
-/* Back card - explanation styling */
 .back {
   transform: rotateY(180deg);
-  font-size: clamp(14px, 3.5vw, 18px);
-  line-height: 1.5;
-  text-align: left;
-  padding: 25px;
-  display: block;
-  overflow-y: auto;
-  z-index: 1; /* Lower z-index for back by default */
+  z-index: 1;
 }
 
 /* Better scrollbar for card content */
@@ -169,32 +159,16 @@ body.dark .back::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* iOS fix for card flipping */
-.card.flipped {
-  transform-style: preserve-3d;
-}
-
-.card.flipped .front {
-  transform: rotateY(180deg);
-  z-index: 1; /* Change z-index when flipped */
-}
-
-.card.flipped .back {
-  transform: rotateY(0deg);
-  z-index: 2; /* Change z-index when flipped */
-}
-
 /* iOS specific fix */
 @supports (-webkit-touch-callout: none) {
-  .card {
-    transform-style: preserve-3d;
+  .ios-fix .front {
+    -webkit-transform: rotateY(180deg) !important;
+    transform: rotateY(180deg) !important;
   }
-  
-  .front, .back {
-    -webkit-transform-style: preserve-3d;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    will-change: transform;
+
+  .ios-fix .back {
+    -webkit-transform: rotateY(0deg) !important;
+    transform: rotateY(0deg) !important;
   }
 }
 
@@ -474,27 +448,6 @@ button[type="submit"]:active {
   /* Better scroll behavior on iOS */
   .back {
     -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Force hardware acceleration for smoother transitions on iOS */
-@supports (-webkit-touch-callout: none) {
-  .card, .front, .back {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-  }
-  
-  /* More forceful approach to fix iOS Safari issues */
-  .card.flipped .front {
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
-    display: block;
-  }
-  
-  .card.flipped .back {
-    -webkit-transform: rotateY(0deg);
-    transform: rotateY(0deg);
-    display: block;
   }
 }
 

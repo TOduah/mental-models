@@ -93,12 +93,9 @@ const DEFAULT_MODELS = [
   }
   
   function flipCard() {
-    // Force iOS to recognize the change
-    setTimeout(function() {
-      card.classList.toggle("flipped");
-      console.log("Card flipped");
-    }, 0);
-  }
+    const card = document.getElementById("card");
+    card.classList.toggle("flipped");
+  }  
 
   function initializeCardFlipping() {
     // Remove any existing listeners first to avoid duplication
@@ -328,10 +325,8 @@ const DEFAULT_MODELS = [
     // Remove the inline onclick handler that might be causing issues
     cardElement.removeAttribute('onclick');
     
-    // Add a simple click event listener directly
-    cardElement.addEventListener('click', function(e) {
-      flipCard();
-    });
+    const inner = cardElement.querySelector('.card-inner');
+    inner.classList.toggle("ios-fix");
   }
   
   // Initialize function
