@@ -1,3 +1,5 @@
+/* The only changes needed are in the card flipping section */
+
 :root {
   --bg: #f3f4f6;
   --text: #000;
@@ -97,6 +99,7 @@ body.dark #darkModeToggle::after {
   cursor: pointer;
   margin-bottom: 20px;
   -webkit-tap-highlight-color: transparent;
+  transform-style: preserve-3d; /* Added for iOS compatibility */
 }
 
 .front,
@@ -104,7 +107,10 @@ body.dark #darkModeToggle::after {
   width: 100%;
   height: 100%;
   position: absolute;
+  top: 0;
+  left: 0; /* Added for iOS */
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* Added specifically for iOS */
   background: var(--card-bg);
   color: var(--text);
   border-radius: 12px;
@@ -113,7 +119,8 @@ body.dark #darkModeToggle::after {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transition: transform 0.6s, box-shadow 0.3s;
+  transition: transform 0.6s;
+  transform-style: preserve-3d; /* Added for iOS */
   overflow: auto;
   box-sizing: border-box;
   /* Text formatting improvements */
@@ -128,6 +135,8 @@ body.dark #darkModeToggle::after {
   font-size: clamp(18px, 5vw, 24px);
   font-weight: 600;
   line-height: 1.3;
+  transform: rotateY(0deg); /* Explicit for iOS */
+  z-index: 2; /* Higher z-index for front by default */
 }
 
 /* Back card - explanation styling */
@@ -139,6 +148,7 @@ body.dark #darkModeToggle::after {
   padding: 25px;
   display: block;
   overflow-y: auto;
+  z-index: 1; /* Lower z-index for back by default */
 }
 
 /* Better scrollbar for card content */
@@ -159,12 +169,33 @@ body.dark .back::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* iOS fix for card flipping */
+.card.flipped {
+  transform-style: preserve-3d;
+}
+
 .card.flipped .front {
   transform: rotateY(180deg);
+  z-index: 1; /* Change z-index when flipped */
 }
 
 .card.flipped .back {
   transform: rotateY(0deg);
+  z-index: 2; /* Change z-index when flipped */
+}
+
+/* iOS specific fix */
+@supports (-webkit-touch-callout: none) {
+  .card {
+    transform-style: preserve-3d;
+  }
+  
+  .front, .back {
+    -webkit-transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
 }
 
 .card:hover .front,

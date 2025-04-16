@@ -94,6 +94,18 @@ const DEFAULT_MODELS = [
   
   function flipCard() {
     card.classList.toggle("flipped");
+    
+    // Force browser reflow/repaint for iOS Safari
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      card.offsetHeight; // This triggers a reflow
+      
+      // Reset any ongoing transitions
+      card.style.transition = "none";
+      setTimeout(() => {
+        card.style.transition = "";
+      }, 10);
+    }
+    
     console.log("Card flipped");
   }
   
