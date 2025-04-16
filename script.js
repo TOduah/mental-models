@@ -89,6 +89,14 @@ const DEFAULT_MODELS = [
     
     currentIndex = (currentIndex + 1) % filtered.length;
     updateCard(currentIndex);
+    
+    // Reset the button style completely to fix "stuck" appearance
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      setTimeout(() => {
+        nextButton.style.transform = "none";
+        nextButton.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
+      }, 100);
+    }
   }
   
   function prevCard() {
@@ -100,6 +108,14 @@ const DEFAULT_MODELS = [
     
     currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
     updateCard(currentIndex);
+    
+    // Reset the button style completely to fix "stuck" appearance
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      setTimeout(() => {
+        prevButton.style.transform = "none";
+        prevButton.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
+      }, 100);
+    }
   }
   
   // Function to force button style reset for iOS
@@ -112,6 +128,10 @@ const DEFAULT_MODELS = [
       // Then revert back to the original color
       setTimeout(() => {
         button.style.backgroundColor = color;
+        
+        // Also reset transform and shadow properties to fix "stuck" button appearance
+        button.style.transform = "none";
+        button.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
       }, 10);
     }
   }
@@ -127,6 +147,28 @@ const DEFAULT_MODELS = [
     
     currentIndex = newIndex;
     updateCard(currentIndex);
+    
+    // Reset all button styles after any interaction
+    resetAllButtonStyles();
+  }
+  
+  // New helper function to reset all button styles
+  function resetAllButtonStyles() {
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      document.querySelectorAll('button').forEach(btn => {
+        setTimeout(() => {
+          const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+          if (btn.classList.contains('primary-button')) {
+            btn.style.backgroundColor = accentColor;
+          } else {
+            const btnBg = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
+            btn.style.backgroundColor = btnBg;
+          }
+          btn.style.transform = "none";
+          btn.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
+        }, 100);
+      });
+    }
   }
   
   function flipCard() {
@@ -172,6 +214,9 @@ const DEFAULT_MODELS = [
     setTimeout(() => {
       successMsg.remove();
     }, 2500);
+    
+    // Reset all button styles after form submission
+    resetAllButtonStyles();
   }
   
   function getFilteredModels() {
@@ -194,6 +239,8 @@ const DEFAULT_MODELS = [
   tagFilter.addEventListener("change", () => {
     currentIndex = 0;
     updateCard(currentIndex);
+    // Reset button styles when filter changes
+    resetAllButtonStyles();
   });
   
   document.getElementById("addModelForm").addEventListener("submit", e => {
@@ -220,6 +267,8 @@ const DEFAULT_MODELS = [
   toggleBtn.addEventListener("click", () => {
     const isDark = document.body.classList.toggle("dark");
     localStorage.setItem("darkMode", isDark);
+    // Reset button styles when toggling dark mode
+    resetAllButtonStyles();
   });
   
   // Additional iOS button fixes - store original colors for reference
@@ -253,24 +302,49 @@ const DEFAULT_MODELS = [
               const btnBg = getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
               this.style.backgroundColor = btnBg;
             }
+            // Reset transform and shadow explicitly
+            this.style.transform = "none";
+            this.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.1)";
           }, 50);
         }, { passive: true });
       });
   
-      // Apply CSS fixes for iOS
+      // Apply CSS fixes for iOS - Add specific rules to force button reset
       const styleFixForIOS = document.createElement('style');
       styleFixForIOS.textContent = `
         /* iOS-specific overrides */
         @supports (-webkit-touch-callout: none) {
           .primary-controls button {
             background-color: var(--accent-color) !important;
+            transition: background-color 0.2s ease;
           }
+          
           .primary-controls button:active {
             background-color: #3c5bd8 !important;
+            transform: translateY(1px);
+          }
+          
+          /* Force reset after tap */
+          .primary-controls button::after {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
           }
         }
       `;
       document.head.appendChild(styleFixForIOS);
+      
+      // Add touch listeners to the body to help reset stuck buttons
+      document.body.addEventListener('touchstart', function(e) {
+        if (!e.target.closest('button')) {
+          resetAllButtonStyles();
+        }
+      }, { passive: true });
     }
   }
   
@@ -322,6 +396,9 @@ const DEFAULT_MODELS = [
     setTimeout(() => {
       dlMsg.remove();
     }, 2500);
+    
+    // Reset button styles after download
+    resetAllButtonStyles();
   }
   
   // Add animations to the CSS
@@ -350,10 +427,31 @@ const DEFAULT_MODELS = [
     applyDarkModeSetting();
     updateTagOptions();
     updateCard(currentIndex);
-    initializeIOSFixes();
     
     // Special iOS Safari fix
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent)) {
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // Add iOS specific style fixes for button reset
+      const iosFix = document.createElement('style');
+      iosFix.textContent = `
+        /* Force iOS button reset */
+        @supports (-webkit-touch-callout: none) {
+          button {
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s ease !important;
+          }
+          
+          /* Override hover effects to prevent stuck state */
+          .primary-controls button:hover,
+          .secondary-controls button:hover {
+            transform: none !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+          }
+        }
+      `;
+      document.head.appendChild(iosFix);
+      
+      // Set document properties 
       document.documentElement.style.setProperty('--accent-color', '#4c6ef5');
       
       // Force repaint buttons on iOS Safari
@@ -370,6 +468,9 @@ const DEFAULT_MODELS = [
       `;
       document.head.appendChild(btnStyle);
     }
+    
+    // Initialize iOS fixes last
+    initializeIOSFixes();
   }
   
   // Call initialize on load
