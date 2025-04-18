@@ -422,36 +422,74 @@ button[type="submit"]:active {
   font-size: 0.85rem;
   transition: transform 0.1s ease, opacity 0.1s ease;
   color: var(--text);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .knowledge-level-0 {
-  background-color: var(--level-0-color);
-  color: white;
+  background-color: var(--level-0-color) !important;
+  color: white !important;
 }
 
 .knowledge-level-1 {
-  background-color: var(--level-1-color);
-  color: white;
+  background-color: var(--level-1-color) !important;
+  color: white !important;
 }
 
 .knowledge-level-2 {
-  background-color: var(--level-2-color);
-  color: black;
+  background-color: var(--level-2-color) !important;
+  color: black !important;
 }
 
 .knowledge-level-3 {
-  background-color: var(--level-3-color);
-  color: black;
+  background-color: var(--level-3-color) !important;
+  color: black !important;
 }
 
 .knowledge-level-4 {
-  background-color: var(--level-4-color);
-  color: black;
+  background-color: var(--level-4-color) !important;
+  color: black !important;
 }
 
 .knowledge-level-5 {
-  background-color: var(--level-5-color);
-  color: black;
+  background-color: var(--level-5-color) !important;
+  color: black !important;
+}
+
+/* Specifically for iOS */
+@supports (-webkit-touch-callout: none) {
+  .knowledge-btn {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  .knowledge-btn.knowledge-level-0:active, 
+  .knowledge-btn.knowledge-level-0.active {
+    background-color: #d63939 !important; /* Darker shade */
+  }
+  
+  .knowledge-btn.knowledge-level-1:active, 
+  .knowledge-btn.knowledge-level-1.active {
+    background-color: #e67700 !important; /* Darker shade */
+  }
+  
+  .knowledge-btn.knowledge-level-2:active, 
+  .knowledge-btn.knowledge-level-2.active {
+    background-color: #e6b800 !important; /* Darker shade */
+  }
+  
+  .knowledge-btn.knowledge-level-3:active, 
+  .knowledge-btn.knowledge-level-3.active {
+    background-color: #82c91e !important; /* Darker shade */
+  }
+  
+  .knowledge-btn.knowledge-level-4:active, 
+  .knowledge-btn.knowledge-level-4.active {
+    background-color: #37b24d !important; /* Darker shade */
+  }
+  
+  .knowledge-btn.knowledge-level-5:active, 
+  .knowledge-btn.knowledge-level-5.active {
+    background-color: #22b8cf !important; /* Darker shade */
+  }
 }
 
 .knowledge-btn:hover {
@@ -849,7 +887,7 @@ body.study-mode-active .card {
 
 /* iOS-specific fix */
 @supports (-webkit-touch-callout: none) {
-  .primary-controls button, .secondary-controls button {
+  .primary-controls button, .secondary-controls button, .knowledge-btn {
     /* Remove transitions that may interfere with color changes */
     transition: transform 0.1s ease, box-shadow 0.2s ease;
   }
@@ -857,6 +895,17 @@ body.study-mode-active .card {
   /* Better scroll behavior on iOS */
   .back {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Force knowledge level button colors */
+  .knowledge-level-buttons button {
+    -webkit-appearance: none;
+  }
+  
+  /* Add transition delay to ensure color changes are visible */
+  .knowledge-btn {
+    -webkit-transition-delay: 0.05s;
+    transition-delay: 0.05s;
   }
 }
 

@@ -71,6 +71,15 @@ function addKnowledgeLevelButtons() {
       updateKnowledgeLevel(currentModel, level);
       window.nextCard(); // Move to the next card
     });
+    
+    // Store original background color as a data attribute for iOS
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      const level = btn.getAttribute('data-level');
+      const computedStyle = getComputedStyle(document.documentElement);
+      const origColor = computedStyle.getPropertyValue(`--level-${level}-color`).trim();
+      btn.setAttribute('data-orig-bg', origColor);
+      btn.style.backgroundColor = origColor;
+    }
   });
   
   // Find the appropriate insertion point

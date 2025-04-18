@@ -312,7 +312,7 @@ function fixIOSButtonInteractions() {
   const iosFix = document.createElement('style');
   iosFix.textContent = `
     @supports (-webkit-touch-callout: none) {
-      .primary-controls button, .secondary-controls button {
+      .primary-controls button, .secondary-controls button, .knowledge-btn {
         -webkit-touch-callout: none;
         -webkit-tap-highlight-color: transparent;
       }
@@ -328,27 +328,91 @@ function fixIOSButtonInteractions() {
   // Set document properties 
   document.documentElement.style.setProperty('--accent-color', '#4c6ef5');
   
-  // Simple approach for buttons - use simpler events
-  document.querySelectorAll('button').forEach(btn => {
-    const isPrimary = btn.closest('.primary-controls') !== null;
-    
-    // Save original background colors
-    const origBg = isPrimary ? 
-      getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
-      getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
-    
-    btn.addEventListener('mousedown', function() {
-      this.style.backgroundColor = isPrimary ? '#3c5bd8' : '#d0d0d0';
+  // Fix for all buttons including knowledge level buttons
+  const handleButtons = (buttons, isKnowledgeBtn = false) => {
+    buttons.forEach(btn => {
+      // Determine the original background color based on button type
+      let origBg;
+      
+      if (isKnowledgeBtn) {
+        // Get original color from the button's class
+        const level = btn.getAttribute('data-level');
+        origBg = getComputedStyle(document.documentElement)
+          .getPropertyValue(`--level-${level}-color`).trim();
+      } else {
+        const isPrimary = btn.closest('.primary-controls') !== null;
+        origBg = isPrimary ? 
+          getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() : 
+          getComputedStyle(document.documentElement).getPropertyValue('--btn-bg').trim();
+      }
+      
+      // Store the original color as a data attribute
+      btn.setAttribute('data-orig-bg', origBg);
+      
+      // Event listeners for iOS touch events
+      btn.addEventListener('touchstart', function() {
+        const darkerColor = adjustColor(origBg, -20); // Make color darker
+        this.style.backgroundColor = darkerColor;
+      });
+      
+      btn.addEventListener('touchend', function() {
+        // Restore original color
+        this.style.backgroundColor = this.getAttribute('data-orig-bg');
+      });
+      
+      btn.addEventListener('touchcancel', function() {
+        // Restore original color
+        this.style.backgroundColor = this.getAttribute('data-orig-bg');
+      });
+      
+      // Also keep the mouse events for hybrid devices
+      btn.addEventListener('mousedown', function() {
+        const darkerColor = adjustColor(origBg, -20); // Make color darker
+        this.style.backgroundColor = darkerColor;
+      });
+      
+      btn.addEventListener('mouseup', function() {
+        // Restore original color
+        this.style.backgroundColor = this.getAttribute('data-orig-bg');
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        // Restore original color
+        this.style.backgroundColor = this.getAttribute('data-orig-bg');
+      });
     });
-    
-    btn.addEventListener('mouseup', function() {
-      this.style.backgroundColor = origBg;
-    });
-    
-    btn.addEventListener('mouseleave', function() {
-      this.style.backgroundColor = origBg;
+  };
+  
+  // Apply to regular buttons
+  handleButtons(document.querySelectorAll('button:not(.knowledge-btn)'));
+  
+  // Set up an observer to handle knowledge buttons when they're added to the DOM
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        // Check added nodes for knowledge buttons
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // Element node
+            const knowledgeBtns = node.querySelectorAll ? 
+              node.querySelectorAll('.knowledge-btn') : [];
+            
+            if (knowledgeBtns.length > 0) {
+              handleButtons(knowledgeBtns, true);
+            }
+          }
+        });
+      }
     });
   });
+  
+  // Start observing the document for added nodes
+  observer.observe(document.body, { childList: true, subtree: true });
+  
+  // Check if knowledge buttons are already in the DOM
+  const existingKnowledgeBtns = document.querySelectorAll('.knowledge-btn');
+  if (existingKnowledgeBtns.length > 0) {
+    handleButtons(existingKnowledgeBtns, true);
+  }
   
   // Fix card flipping specifically for iOS
   const cardElement = document.getElementById('card');
@@ -358,6 +422,37 @@ function fixIOSButtonInteractions() {
   
   const inner = cardElement.querySelector('.card-inner');
   inner.classList.toggle("ios-fix");
+}
+
+// Helper function to adjust a color by a percentage
+function adjustColor(color, percent) {
+  // Handle hex colors
+  if (color.startsWith('#')) {
+    let r = parseInt(color.substr(1, 2), 16);
+    let g = parseInt(color.substr(3, 2), 16);
+    let b = parseInt(color.substr(5, 2), 16);
+    
+    r = Math.max(0, Math.min(255, r + percent));
+    g = Math.max(0, Math.min(255, g + percent));
+    b = Math.max(0, Math.min(255, b + percent));
+    
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  }
+  
+  // Handle rgb colors
+  if (color.startsWith('rgb')) {
+    const parts = color.match(/\d+/g);
+    if (parts && parts.length >= 3) {
+      const r = Math.max(0, Math.min(255, parseInt(parts[0]) + percent));
+      const g = Math.max(0, Math.min(255, parseInt(parts[1]) + percent));
+      const b = Math.max(0, Math.min(255, parseInt(parts[2]) + percent));
+      
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+  }
+  
+  // If color format not recognized, return original
+  return color;
 }
 
 // Initialize function
