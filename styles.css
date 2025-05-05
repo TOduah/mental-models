@@ -107,8 +107,8 @@ body.dark #darkModeToggle::after {
 .card {
   perspective: 1000px;
   width: 100%;
-  max-width: 360px;
-  height: 220px;
+  max-width: 500px; /* Increased from 360px */
+  height: 300px; /* Increased from 220px */
   cursor: pointer;
   margin-bottom: 20px;
   position: relative; /* For learning indicator positioning */
@@ -196,11 +196,11 @@ body.dark .back::-webkit-scrollbar-thumb {
 .card-counter {
   text-align: center;
   margin-bottom: 15px;
-  font-size: 0.9rem;
+  font-size: 1rem; /* Slightly larger */
   color: var(--text);
   background: var(--card-bg);
   border-radius: 8px;
-  padding: 5px 10px;
+  padding: 6px 12px; /* A bit more padding */
   display: inline-block;
   box-shadow: var(--card-shadow);
 }
@@ -391,9 +391,9 @@ button[type="submit"]:active {
 
 /* === Learning Progress Tracking Styles === */
 
-/* Knowledge level buttons container */
+/* === Knowledge level buttons container === */
 .knowledge-level-container {
-  max-width: 360px;
+  max-width: 500px; /* Increase to match new card width */
   margin: 0 auto 20px auto;
   background: var(--card-bg);
   border-radius: 12px;
@@ -796,8 +796,8 @@ body.study-mode-active .card {
 /* Responsive styles */
 @media (max-width: 600px) {
   .card {
-    height: 180px;
-    max-width: 300px;
+    height: 350px; /* Taller on mobile */
+    max-width: 300px; /* Slightly narrower on mobile */
   }
   
   h1 {
@@ -815,11 +815,13 @@ body.study-mode-active .card {
   
   .back {
     padding: 16px;
-    font-size: 14px;
+    font-size: 16px; /* Larger text on back */
+    overflow-y: auto; /* Enable scrolling for longer content */
   }
   
   /* Responsive styles for learning features */
   .knowledge-level-buttons {
+    max-width: 300px; /* Match card width */
     grid-template-columns: repeat(2, 1fr);
   }
   
@@ -864,8 +866,12 @@ body.study-mode-active .card {
   }
   
   .card {
-    height: 160px;
+    height: 400px; /* Even taller on smaller phones */
     max-width: 280px;
+  }
+
+  .knowledge-level-container {
+    max-width: 280px; /* Match card width */
   }
   
   .front {
@@ -873,8 +879,8 @@ body.study-mode-active .card {
   }
   
   .back {
-    font-size: 13px;
-    padding: 14px;
+    font-size: 15px;
+    padding: 18px;
   }
 }
 
@@ -912,7 +918,7 @@ body.study-mode-active .card {
 /* For very small screens (like iPhone 5/SE) */
 @media (max-width: 320px) {
   .card {
-    height: 150px;
+    height: 350px; /* Adjusted for smallest screens */
     max-width: 260px;
   }
   
